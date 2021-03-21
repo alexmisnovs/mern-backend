@@ -1,5 +1,5 @@
 const HttpError = require("../models/http-error");
-
+const { v4: uuidv4 } = require("uuid");
 const dummyPlaces = [
   {
     id: "1",
@@ -64,5 +64,21 @@ const getPlacesByUserId = (req, res, next) => {
   res.json({ message: "Found", uid, count: places.length, places });
 };
 
+const createNewPlace = (req, res, next) => {
+  const { title, description, coordinates, address, creator } = req.body;
+  const createdPlace = {
+    id: uuidv4(),
+    title,
+    description,
+    location: coordinates,
+    address,
+    creator,
+  };
+  dummyPlaces.push(createdPlace); // can use unshift
+
+  res.status(201).json({ place: createdPlace });
+};
+
 exports.getPlaceById = getPlaceById;
 exports.getPlacesByUserId = getPlacesByUserId;
+exports.createNewPlace = createNewPlace;
