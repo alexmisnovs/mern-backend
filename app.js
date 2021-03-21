@@ -8,7 +8,7 @@ const { json } = require("body-parser");
 app.use("/api/places/v1/", placesRoutes); //places api
 
 app.use((error, req, res, next) => {
-  if (res.headerSent) {
+  if (res.headersSent) {
     return next(error);
   }
   res.status(error.code || 500);
