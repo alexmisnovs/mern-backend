@@ -1,6 +1,8 @@
 const HttpError = require("../models/http-error");
 const { v4: uuidv4 } = require("uuid");
 const { validationResult } = require("express-validator");
+//TODO: make get coords work with google api as well. atm only with mapbox
+const getCoordsForAddress = require("../utils/location");
 
 let dummyPlaces = [
   {
@@ -114,14 +116,24 @@ const deletePlaceById = (req, res, next) => {
   res.json({ message: "deleted", pid, dummyPlaces });
 };
 
-const createNewPlace = (req, res, next) => {
+const createNewPlace = async (req, res, next) => {
   const validationErrors = validationResult(req);
+
   if (!validationErrors.isEmpty()) {
     console.log(validationErrors);
     res.status(422);
     res.json(validationErrors.mapped());
   }
-  const { title, description, coordinates, address, creator } = req.body;
+
+  const { title, description, address, creator } = req.body;
+
+  let coordinates;
+  try {
+    coordinates = await getCoordsForAddress(address);
+  } catch (error) {
+    return next(error);
+  }
+
   const createdPlace = {
     id: uuidv4(),
     title,
