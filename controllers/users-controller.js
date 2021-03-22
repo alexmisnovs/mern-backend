@@ -1,5 +1,6 @@
 const HttpError = require("../models/http-error");
 const { v4: uuidv4 } = require("uuid");
+const { validationResult } = require("express-validator");
 let dummyUsers = [
   {
     id: "1",
@@ -26,6 +27,12 @@ const getAllUsers = (req, res, next) => {
 };
 
 const login = (req, res, next) => {
+  const validationErrors = validationResult(req);
+  if (!validationErrors.isEmpty()) {
+    console.log(validationErrors);
+    res.status(422);
+    res.json(validationErrors.array());
+  }
   const { email, password } = req.body;
 
   // check if we have any users with that uid
@@ -41,17 +48,18 @@ const login = (req, res, next) => {
 };
 
 const signup = (req, res, next) => {
+  const validationErrors = validationResult(req);
+  if (!validationErrors.isEmpty()) {
+    console.log(validationErrors);
+    res.status(422);
+    res.json(validationErrors.mapped());
+  }
   const { username, email, password } = req.body;
 
   //basic validation
   if (!password || !email || !username) {
     return next(new HttpError("You must provide all required fields", 401));
   }
-
-  if (password.length < 5) {
-    return next(new HttpError("password too short", 401));
-  }
-
   // lets check if email or username are already taken eg user exists.
   if (dummyUsers.find(u => u.email === email)) {
     return next(new HttpError("email taken..", 401));
@@ -69,10 +77,16 @@ const signup = (req, res, next) => {
 
   dummyUsers.push(createdUser); // can use unshift
 
-  res.status(201).json({ user: createdUser });
+  res.status(201).json({ message: "User created", user: createdUser });
 };
 
 const updateUserById = (req, res, next) => {
+  const validationErrors = validationResult(req);
+  if (!validationErrors.isEmpty()) {
+    console.log(validationErrors);
+    res.status(422);
+    res.json(validationErrors.array());
+  }
   // make sure that we get what we need
   const uid = req.params.uid;
   const user = dummyUsers.find(u => {

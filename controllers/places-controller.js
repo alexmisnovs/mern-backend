@@ -1,5 +1,7 @@
 const HttpError = require("../models/http-error");
 const { v4: uuidv4 } = require("uuid");
+const { validationResult } = require("express-validator");
+
 let dummyPlaces = [
   {
     id: "1",
@@ -66,6 +68,13 @@ const getPlacesByUserId = (req, res, next) => {
 };
 
 const updatePlaceById = (req, res, next) => {
+  const validationErrors = validationResult(req);
+  if (!validationErrors.isEmpty()) {
+    console.log(validationErrors);
+    res.status(422);
+    res.json(validationErrors.mapped());
+  }
+
   const { title, description, coordinates, address } = req.body;
   const pid = req.params.pid;
   const updatedPlace = { ...dummyPlaces.find(p => p.id === pid) };
@@ -106,6 +115,12 @@ const deletePlaceById = (req, res, next) => {
 };
 
 const createNewPlace = (req, res, next) => {
+  const validationErrors = validationResult(req);
+  if (!validationErrors.isEmpty()) {
+    console.log(validationErrors);
+    res.status(422);
+    res.json(validationErrors.mapped());
+  }
   const { title, description, coordinates, address, creator } = req.body;
   const createdPlace = {
     id: uuidv4(),
