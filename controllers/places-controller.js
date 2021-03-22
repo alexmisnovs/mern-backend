@@ -1,6 +1,6 @@
 const HttpError = require("../models/http-error");
 const { v4: uuidv4 } = require("uuid");
-const dummyPlaces = [
+let dummyPlaces = [
   {
     id: "1",
     title: "Empire State building 2",
@@ -46,7 +46,8 @@ const getPlaceById = (req, res, next) => {
     return p.id == placeId;
   });
   if (!place) {
-    throw new HttpError("Place Not Found!", 404);
+    // throw new HttpError("Place Not Found!", 404);
+    return next(new HttpError("Place not found", 404));
   }
   res.json({ message: "Found", placeId, place });
 };
@@ -57,11 +58,51 @@ const getPlacesByUserId = (req, res, next) => {
   const places = dummyPlaces.filter(p => {
     return p.creator === uid;
   });
-  if (places.length === 0) {
+  if (!places || places.length === 0) {
     // throw new HttpError("User Not Found innit! blood", 404);
     return next(new HttpError("User not found", 404));
   }
   res.json({ message: "Found", uid, count: places.length, places });
+};
+
+const updatePlaceById = (req, res, next) => {
+  const { title, description, coordinates, address } = req.body;
+  const pid = req.params.pid;
+  const updatedPlace = { ...dummyPlaces.find(p => p.id === pid) };
+  const placeIndex = dummyPlaces.findIndex(p => p.id === pid);
+  if (title) updatedPlace.title = title;
+  if (description) updatedPlace.description = description;
+  // updatePlace.coordinates = coordinates;
+  // updatePlace.address = address;
+
+  dummyPlaces[placeIndex] = updatedPlace;
+  const place = dummyPlaces.find(p => {
+    return p.id == pid;
+  });
+  if (!place) {
+    // throw new HttpError("Place Not Found!", 404);
+    return next(new HttpError("Place not found", 404));
+  }
+  // need to check if anything has actually changed or not..?
+  res.status(200);
+  res.json({ message: "updated", pid, updatedPlace });
+};
+const deletePlaceById = (req, res, next) => {
+  const pid = req.params.pid;
+  // check if we have any users with that uid
+  const place = dummyPlaces.find(p => {
+    return p.id == pid;
+  });
+  if (!place) {
+    // throw new HttpError("Place Not Found!", 404);
+    return next(new HttpError("Place not found", 404));
+  }
+  // return updated places array
+  dummyPlaces = dummyPlaces.filter(p => {
+    return p.id !== pid;
+  });
+  res.status(200);
+  res.json({ message: "deleted", pid, dummyPlaces });
 };
 
 const createNewPlace = (req, res, next) => {
@@ -82,3 +123,5 @@ const createNewPlace = (req, res, next) => {
 exports.getPlaceById = getPlaceById;
 exports.getPlacesByUserId = getPlacesByUserId;
 exports.createNewPlace = createNewPlace;
+exports.updatePlaceById = updatePlaceById;
+exports.deletePlaceById = deletePlaceById;

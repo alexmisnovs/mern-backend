@@ -3,11 +3,13 @@ const HttpError = require("./models/http-error");
 
 const app = express();
 const placesRoutes = require("./routes/places-routes");
+const usersRoutes = require("./routes/users-routes");
 const { json } = require("body-parser");
 
 app.use(express.json());
 
 app.use("/api/places/v1/", placesRoutes); //places api
+app.use("/api/users/v1/", usersRoutes); //places api
 // only if we didn't send the response
 app.use((req, res, next) => {
   const error = new HttpError("couldnt find this route", 404);
