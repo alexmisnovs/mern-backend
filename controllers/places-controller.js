@@ -3,6 +3,7 @@ const { v4: uuidv4 } = require("uuid");
 const { validationResult } = require("express-validator");
 //TODO: make get coords work with google api as well. atm only with mapbox
 const getCoordsForAddress = require("../utils/location");
+const Place = require("../models/place");
 
 let dummyPlaces = [
   {
@@ -43,30 +44,47 @@ let dummyPlaces = [
   },
 ];
 
-const getPlaceById = (req, res, next) => {
+const getPlaceById = async (req, res, next) => {
   const placeId = req.params.pid;
+  let place;
+  try {
+    place = await Place.findById(placeId).exec();
+  } catch (err) {
+    const error = new HttpError(err.message, err.code, 500);
+    console.log(err.message);
+    console.log(err.code);
+    return next(error);
+  }
 
-  const place = dummyPlaces.find(p => {
-    return p.id == placeId;
-  });
   if (!place) {
     // throw new HttpError("Place Not Found!", 404);
     return next(new HttpError("Place not found", 404));
   }
-  res.json({ message: "Found", placeId, place });
+  res.json({ message: "Found", placeId, place: place.toObject({ getters: true }) });
 };
 
-const getPlacesByUserId = (req, res, next) => {
+const getPlacesByUserId = async (req, res, next) => {
   const uid = req.params.uid;
   // check if we have any users with that uid
-  const places = dummyPlaces.filter(p => {
-    return p.creator === uid;
-  });
+  let places;
+  try {
+    places = await Place.find({ creator: uid }).exec();
+  } catch (err) {
+    const error = new HttpError(err.message, 500);
+    console.log(err.message);
+    console.log(err.code);
+    return next(error);
+  }
+
   if (!places || places.length === 0) {
     // throw new HttpError("User Not Found innit! blood", 404);
     return next(new HttpError("User not found", 404));
   }
-  res.json({ message: "Found", uid, count: places.length, places });
+  res.json({
+    uid,
+    count: places.length,
+    places: places.map(place => place.toObject({ getters: true })),
+  });
 };
 
 const updatePlaceById = (req, res, next) => {
@@ -134,15 +152,25 @@ const createNewPlace = async (req, res, next) => {
     return next(error);
   }
 
-  const createdPlace = {
-    id: uuidv4(),
+  const createdPlace = new Place({
     title,
     description,
     location: coordinates,
+    imageUrl: "https://picsum.photos/200/300",
     address,
     creator,
-  };
-  dummyPlaces.push(createdPlace); // can use unshift
+  });
+
+  try {
+    await createdPlace.save();
+  } catch (err) {
+    const error = new HttpError(err.message, 500);
+    console.log(err.message);
+    console.log(err.code);
+    return next(error);
+  }
+
+  // dummyPlaces.push(createdPlace); // can use unshift
 
   res.status(201).json({ place: createdPlace });
 };
