@@ -61,7 +61,7 @@ const getPlaceById = async (req, res, next) => {
     // throw new HttpError("Place Not Found!", 404);
     return next(new HttpError("Place not found", 404));
   }
-  res.json({ message: "Found", placeId, place: place.toObject({ getters: true }) });
+  res.json({ message: "Found", placeId,places: places.map(place => place.toObject({ getters: true })), });
 };
 
 const getPlacesByUserId = async (req, res, next) => {
@@ -88,51 +88,80 @@ const getPlacesByUserId = async (req, res, next) => {
   });
 };
 
-const updatePlaceById = (req, res, next) => {
+const updatePlaceById = async (req, res, next) => {
+
   const validationErrors = validationResult(req);
   if (!validationErrors.isEmpty()) {
     console.log(validationErrors);
     res.status(422);
     res.json(validationErrors.mapped());
+    return
   }
 
   const { title, description, coordinates, address } = req.body;
   const pid = req.params.pid;
-  const updatedPlace = { ...dummyPlaces.find(p => p.id === pid) };
-  const placeIndex = dummyPlaces.findIndex(p => p.id === pid);
-  if (title) updatedPlace.title = title;
-  if (description) updatedPlace.description = description;
-  // updatePlace.coordinates = coordinates;
-  // updatePlace.address = address;
 
-  dummyPlaces[placeIndex] = updatedPlace;
-  const place = dummyPlaces.find(p => {
-    return p.id == pid;
-  });
+  let place;
+
+  try {
+    place = await Place.findById(pid).exec();
+  } catch (err) {
+    const error = new HttpError(err.message, 500);
+    console.log(err.message);
+    console.log(err.code);
+    return next(error);
+  }
+
   if (!place) {
     // throw new HttpError("Place Not Found!", 404);
     return next(new HttpError("Place not found", 404));
   }
-  // need to check if anything has actually changed or not..?
+
+  if (title) place.title = title;
+  if (description) place.description = description;
+
+  try {
+    await place.save();
+  } catch (err) {
+    const error = new HttpError(err.message, 500);
+    console.log(err.message);
+    console.log(err.code);
+    return next(error);
+  }
+
+
   res.status(200);
-  res.json({ message: "updated", pid, updatedPlace });
+  res.json({ place: place.toObject({ getters: true }) });
 };
-const deletePlaceById = (req, res, next) => {
+const deletePlaceById = async (req, res, next) => {
   const pid = req.params.pid;
   // check if we have any users with that uid
-  const place = dummyPlaces.find(p => {
-    return p.id == pid;
-  });
+  let place;
+
+  try {
+    place = await Place.findById(pid).exec();
+  } catch (err) {
+    const error = new HttpError(err.message, 500);
+    console.log(err.message);
+    console.log(err.code);
+    return next(error);
+  }
+
   if (!place) {
     // throw new HttpError("Place Not Found!", 404);
     return next(new HttpError("Place not found", 404));
   }
   // return updated places array
-  dummyPlaces = dummyPlaces.filter(p => {
-    return p.id !== pid;
-  });
+  try {
+    await place.delete();
+  } catch (err) {
+    const error = new HttpError(err.message, 500);
+    console.log(err.message);
+    console.log(err.code);
+    return next(error);
+  }
   res.status(200);
-  res.json({ message: "deleted", pid, dummyPlaces });
+  res.json({ message: "deleted", pid, place: place.toObject({ getters: true }) });
 };
 
 const createNewPlace = async (req, res, next) => {

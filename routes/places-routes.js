@@ -11,7 +11,7 @@ router.post(
   "/",
   [
     check("title").not().isEmpty(),
-    check("description").isLength({ min: 5 }),
+    check("description").isLength({ min: 5 }).withMessage("must contain atleast 5 chars"),
     check("address").not().isEmpty(),
   ],
   placesController.createNewPlace
@@ -20,7 +20,7 @@ router.patch(
   "/:pid",
   [
     check("title").if(body("title").exists()).not().isEmpty(),
-    check("description").if(body("description").exists()).isLength({ min: 5 }),
+    check("description").if(body("description").exists()).isLength({ min: 5 }).withMessage("must contain atleast 5 chars"),
     check("address").if(body("address").exists()).not().isEmpty(),
   ],
   placesController.updatePlaceById
