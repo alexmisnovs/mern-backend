@@ -31,7 +31,7 @@ app.use((error, req, res, next) => {
 
 const MONGO_URI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASS}@cluster0.mvkrs.mongodb.net/${process.env.MONGO_DBNAME}?retryWrites=true&w=majority`;
 mongoose
-  .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true }) // possibly might be better to split this into couple of variables
+  .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true }) // possibly might be better to split this into couple of variables
   .then(() => {
     console.log("Connected to the database server");
     // can also run the db write check to see if the database name is not misspelled. TODO:

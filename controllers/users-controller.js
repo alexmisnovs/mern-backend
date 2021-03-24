@@ -18,17 +18,25 @@ let dummyUsers = [
   },
 ];
 
-const getAllUsers = (req, res, next) => {
-  if (dummyUsers.length === 0) {
+const getAllUsers = async (req, res, next) => {
+  // const users = await User.find({}, '-password');
+  let users;
+  try {
+    users = await User.find({}, "email name");
+  } catch (error) {
+    return next(new HttpError("Couldn't get the users", 500));
+  }
+  if (users.length === 0) {
     // throw new HttpError("Place Not Found!", 404);
     return next(new HttpError("No users so far", 404));
   }
+
   // obviously return without passwords or hash passwords
   res.status(200);
-  res.json({ dummyUsers });
+  res.json({ users: users.map(user => user.toObject({ getters: true })) });
 };
 
-const login = (req, res, next) => {
+const login = async (req, res, next) => {
   const validationErrors = validationResult(req);
   if (!validationErrors.isEmpty()) {
     console.log(validationErrors);
@@ -38,15 +46,18 @@ const login = (req, res, next) => {
   const { email, password } = req.body;
 
   // check if we have any users with that uid
-  const user = dummyUsers.find(p => {
-    return p.email === email;
-  });
-  if (!user || user.password !== password) {
-    // throw new HttpError("User Not Found innit! blood", 404);
-    return next(new HttpError("User not found or wrong credentials provided", 404));
+  try {
+    existingUser = await User.findOne({ email });
+  } catch (error) {
+    return next(new HttpError("Login Failed", 500));
   }
 
-  res.json({ message: "logged in", uid: user.id });
+  if (!existingUser || existingUser.password !== password) {
+    // throw new HttpError("User Not Found innit! blood", 404);
+    return next(new HttpError("User not found or wrong credentials provided", 401));
+  }
+
+  res.json({ message: "logged in" });
 };
 
 const signup = async (req, res, next) => {
