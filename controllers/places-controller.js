@@ -47,6 +47,7 @@ let dummyPlaces = [
 const getPlaceById = async (req, res, next) => {
   const placeId = req.params.pid;
   let place;
+  console.log(placeId);
   try {
     place = await Place.findById(placeId).exec();
   } catch (err) {

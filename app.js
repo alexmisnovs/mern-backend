@@ -10,8 +10,8 @@ const { json } = require("body-parser");
 
 app.use(express.json());
 
-app.use("/api/places/v1/", placesRoutes); //places api
-app.use("/api/users/v1/", usersRoutes); //places api
+app.use("/api/v1/places/", placesRoutes); //places api
+app.use("/api/v1/users/", usersRoutes); //places api
 // only if we didn't send the response
 app.use((req, res, next) => {
   const error = new HttpError("couldnt find this route", 404);
@@ -29,8 +29,9 @@ app.use((error, req, res, next) => {
   });
 }); //if 4 params, special middleware - error handling. Express will only use it if ther ewas an error
 
+const MONGO_URI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASS}@cluster0.mvkrs.mongodb.net/${process.env.MONGO_DBNAME}?retryWrites=true&w=majority`;
 mongoose
-  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true }) // possibly might be better to split this into couple of variables
+  .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true }) // possibly might be better to split this into couple of variables
   .then(() => {
     console.log("Connected to the database server");
     // can also run the db write check to see if the database name is not misspelled. TODO:
