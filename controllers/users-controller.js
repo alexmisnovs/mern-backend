@@ -67,7 +67,7 @@ const signup = async (req, res, next) => {
     res.status(422);
     res.json(validationErrors.mapped());
   }
-  const { name, email, password, places } = req.body;
+  const { name, email, password } = req.body;
 
   //basic validation
   if (!password || !email || !name) {
@@ -89,7 +89,7 @@ const signup = async (req, res, next) => {
     password, //TODO: encrypt password later
     imageUrl: "https://picsum.photos/100/100",
     email,
-    places,
+    places: [],
   });
 
   try {

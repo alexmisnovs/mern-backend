@@ -3,46 +3,9 @@ const { v4: uuidv4 } = require("uuid");
 const { validationResult } = require("express-validator");
 //TODO: make get coords work with google api as well. atm only with mapbox
 const getCoordsForAddress = require("../utils/location");
+const mongoose = require("mongoose");
 const Place = require("../models/place");
-
-let dummyPlaces = [
-  {
-    id: "1",
-    title: "Empire State building 2",
-    description: "One of the most famous buildings",
-    imageUrl: "https://picsum.photos/200/300",
-    address: "20 W 34th St, New York, NY 10001, United States",
-    location: {
-      lat: 40.7484405,
-      lng: -73.9856644,
-    },
-    creator: "1",
-  },
-  {
-    id: "2",
-    title: "Empire State building 1",
-    description: "One of the most famous buildings",
-    imageUrl: "https://picsum.photos/200/300",
-    address: "20 W 34th St, New York, NY 10001, United States",
-    location: {
-      lat: 40.7484405,
-      lng: -73.9856644,
-    },
-    creator: "1",
-  },
-  {
-    id: "3",
-    title: "Empire State building",
-    description: "One of the most famous buildings",
-    imageUrl: "https://picsum.photos/200/300",
-    address: "20 W 34th St, New York, NY 10001, United States",
-    location: {
-      lat: 40.7484405,
-      lng: -73.9856644,
-    },
-    creator: "2",
-  },
-];
+const User = require("../models/user");
 
 const getPlaceById = async (req, res, next) => {
   const placeId = req.params.pid;
@@ -61,7 +24,11 @@ const getPlaceById = async (req, res, next) => {
     // throw new HttpError("Place Not Found!", 404);
     return next(new HttpError("Place not found", 404));
   }
-  res.json({ message: "Found", placeId,places: places.map(place => place.toObject({ getters: true })), });
+  res.json({
+    message: "Found",
+    placeId,
+    places: places.map(place => place.toObject({ getters: true })),
+  });
 };
 
 const getPlacesByUserId = async (req, res, next) => {
@@ -89,13 +56,12 @@ const getPlacesByUserId = async (req, res, next) => {
 };
 
 const updatePlaceById = async (req, res, next) => {
-
   const validationErrors = validationResult(req);
   if (!validationErrors.isEmpty()) {
     console.log(validationErrors);
     res.status(422);
     res.json(validationErrors.mapped());
-    return
+    return;
   }
 
   const { title, description, coordinates, address } = req.body;
@@ -128,7 +94,6 @@ const updatePlaceById = async (req, res, next) => {
     console.log(err.code);
     return next(error);
   }
-
 
   res.status(200);
   res.json({ place: place.toObject({ getters: true }) });
@@ -191,10 +156,34 @@ const createNewPlace = async (req, res, next) => {
     creator,
   });
 
+  let user;
   try {
-    await createdPlace.save();
+    user = await User.findById(creator);
   } catch (err) {
     const error = new HttpError(err.message, 500);
+    console.log(err.message);
+    console.log(err.code);
+    return next(error);
+  }
+
+  if (!user) {
+    return next(new HttpError("Couldnt find user for the provided id", 500));
+  }
+
+  console.log(user);
+
+  try {
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    await createdPlace.save({ session: sess });
+    user.places.push(createdPlace); // mongoose push not usual push
+    console.log(user);
+    await user.save({ session: sess });
+    await sess.commitTransaction(); // only at this stage do we save to db
+    // make sure that DB has the collections, commitTransaction wont create it automatically
+  } catch (err) {
+    const error = new HttpError(err.message, 500);
+    console.log(err);
     console.log(err.message);
     console.log(err.code);
     return next(error);
