@@ -10,18 +10,18 @@ router.get("/user/:uid", placesController.getPlacesByUserId);
 router.post(
   "/",
   [
-    check("title").not().isEmpty(),
+    check("title").not().isEmpty().withMessage("Please provide a value"),
     check("description").isLength({ min: 5 }).withMessage("must contain atleast 5 chars"),
-    check("address").not().isEmpty(),
+    check("address").not().isEmpty().withMessage("Please provide a value"),
   ],
   placesController.createNewPlace
 );
 router.patch(
   "/:pid",
   [
-    check("title").if(body("title").exists()).not().isEmpty(),
+    check("title").if(body("title").exists()).not().isEmpty().withMessage("Please provide a value"),
     check("description").if(body("description").exists()).isLength({ min: 5 }).withMessage("must contain atleast 5 chars"),
-    check("address").if(body("address").exists()).not().isEmpty(),
+    check("address").if(body("address").exists()).not().isEmpty().withMessage("Please provide a value"),
   ],
   placesController.updatePlaceById
 );
