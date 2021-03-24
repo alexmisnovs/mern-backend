@@ -49,37 +49,48 @@ const login = (req, res, next) => {
   res.json({ message: "logged in", uid: user.id });
 };
 
-const signup = (req, res, next) => {
+const signup = async (req, res, next) => {
   const validationErrors = validationResult(req);
   if (!validationErrors.isEmpty()) {
     console.log(validationErrors);
     res.status(422);
     res.json(validationErrors.mapped());
   }
-  const { username, email, password } = req.body;
+  const { name, email, password, places } = req.body;
 
   //basic validation
-  if (!password || !email || !username) {
+  if (!password || !email || !name) {
     return next(new HttpError("You must provide all required fields", 401));
   }
-  // lets check if email or username are already taken eg user exists.
-  if (dummyUsers.find(u => u.email === email)) {
-    return next(new HttpError("email taken..", 401));
+  // lets check if email or name are already taken eg user exists.
+  let existingUser;
+  try {
+    existingUser = await User.findOne({ email });
+  } catch (error) {
+    return next(new HttpError("Signup Failed", 500));
   }
-  if (dummyUsers.find(u => u.username === username)) {
-    return next(new HttpError("username taken..", 401));
+  if (existingUser) {
+    return next(new HttpError("signup failed email taken", 422));
   }
 
-  const createdUser = {
-    id: uuidv4(),
-    username,
-    password,
+  const createdUser = new User({
+    name,
+    password, //TODO: encrypt password later
+    imageUrl: "https://picsum.photos/100/100",
     email,
-  };
+    places,
+  });
 
-  dummyUsers.push(createdUser); // can use unshift
-
-  res.status(201).json({ message: "User created", user: createdUser });
+  try {
+    await createdUser.save();
+  } catch (err) {
+    const error = new HttpError("Signing up failed", 500);
+    console.log(err.message);
+    console.log(err.code);
+    return next(error);
+  }
+  // obviously live we dont return password
+  res.status(201).json({ message: "User created", user: createdUser.toObject({ getters: true }) });
 };
 
 const updateUserById = (req, res, next) => {
@@ -88,6 +99,7 @@ const updateUserById = (req, res, next) => {
     console.log(validationErrors);
     res.status(422);
     res.json(validationErrors.array());
+    return;
   }
   // make sure that we get what we need
   const uid = req.params.uid;
@@ -98,12 +110,12 @@ const updateUserById = (req, res, next) => {
     // throw new HttpError("Place Not Found!", 404);
     return next(new HttpError("User not found", 404));
   }
-  const { username, password, email } = req.body;
+  const { name, password, email } = req.body;
   const updatedUser = { ...dummyUsers.find(u => u.id === uid) };
   const userIndex = dummyUsers.findIndex(u => u.id === uid);
   // we need to update the fields what were passed, otherwise other fields will be empty
-  // so if only username was passed, need to to only update it. or maybe compare with existing object
-  if (username) updatedUser.username = username;
+  // so if only name was passed, need to to only update it. or maybe compare with existing object
+  if (name) updatedUser.name = name;
   if (password) updatedUser.password = password;
   if (email) updatedUser.email = email;
 

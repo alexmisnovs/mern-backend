@@ -8,7 +8,7 @@ router.get("/", usersController.getAllUsers);
 router.post(
   "/signup",
   [
-    check("username").not().isEmpty(),
+    check("name").not().isEmpty(),
     check("email").normalizeEmail().isEmail().withMessage("must be a valid email"),
     check("password").isLength({ min: 5 }).withMessage("must contain atleast 5 chars"),
   ],
@@ -25,7 +25,7 @@ router.post(
 router.patch(
   "/:uid",
   [
-    check("username").if(body("username").exists()).not().isEmpty(),
+    check("name").if(body("name").exists()).not().isEmpty(),
     check("email").if(body("email").exists()).isEmail(),
     check("password")
       .if(body("password").exists())
