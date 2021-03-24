@@ -153,7 +153,7 @@ const deletePlaceById = async (req, res, next) => {
   }
   // return updated places array
   try {
-    await place.delete();
+    await place.remove();
   } catch (err) {
     const error = new HttpError(err.message, 500);
     console.log(err.message);
