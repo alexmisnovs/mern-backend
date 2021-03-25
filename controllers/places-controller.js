@@ -35,24 +35,25 @@ const getPlaceById = async (req, res, next) => {
 const getPlacesByUserId = async (req, res, next) => {
   const uid = req.params.uid;
   // check if we have any users with that uid
-  let places;
+  let userWithPlaces;
   try {
-    places = await Place.find({ creator: uid }).exec();
+    // places = await Place.find({ creator: uid });
+    //we could do this with populate method on the user model
+    userWithPlaces = await User.findById(uid).populate("places");
   } catch (err) {
-    const error = new HttpError(err.message, 500);
-    console.log(err.message);
-    console.log(err.code);
-    return next(error);
+    if (err.kind === "ObjectId") return next(new HttpError(err.reason, 500));
+    console.log(err);
+    return next(new HttpError("Couldn't find places", 500));
   }
-
-  if (!places || places.length === 0) {
+  // if (!places || places.length === 0) {
+  if (!userWithPlaces || userWithPlaces.places.length === 0) {
     // throw new HttpError("User Not Found innit! blood", 404);
     return next(new HttpError("User not found", 404));
   }
   res.json({
     uid,
-    count: places.length,
-    places: places.map(place => place.toObject({ getters: true })),
+    count: userWithPlaces.places.length,
+    places: userWithPlaces.places.map(place => place.toObject({ getters: true })),
   });
 };
 

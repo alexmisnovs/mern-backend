@@ -21,6 +21,27 @@ const getAllUsers = async (req, res, next) => {
   res.json({ users: users.map(user => user.toObject({ getters: true })) });
 };
 
+const getUserById = async (req, res, next) => {
+  // const users = await User.find({}, '-password');
+  const uid = req.params.uid;
+  let user;
+  try {
+    user = await User.findById(uid, "email name places");
+  } catch (error) {
+    console.log(error);
+    return next(new HttpError("Couldn't get the users", 500));
+  }
+
+  if (!user) {
+    // throw new HttpError("Place Not Found!", 404);
+    return next(new HttpError("User not found", 404));
+  }
+
+  // obviously return without passwords or hash passwords
+  res.status(200);
+  res.json({ user: user.toObject({ getters: true }) });
+};
+
 const login = async (req, res, next) => {
   const validationErrors = validationResult(req);
   if (!validationErrors.isEmpty()) {
@@ -144,5 +165,6 @@ const deleteUserById = (req, res, next) => {
 exports.signup = signup;
 exports.login = login;
 exports.getAllUsers = getAllUsers;
+exports.getUserById = getUserById;
 exports.updateUserById = updateUserById;
 exports.deleteUserById = deleteUserById;

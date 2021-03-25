@@ -5,6 +5,7 @@ const router = express.Router();
 const usersController = require("../controllers/users-controller");
 // will respond to antyhing after the slash, so its better to use something like: /places/pid
 router.get("/", usersController.getAllUsers);
+router.get("/:uid", usersController.getUserById);
 router.post(
   "/signup",
   [
