@@ -3,26 +3,11 @@ const { v4: uuidv4 } = require("uuid");
 const { validationResult } = require("express-validator");
 const User = require("../models/user");
 
-let dummyUsers = [
-  {
-    id: "1",
-    username: "dennis",
-    email: "dennis@misnov.com",
-    password: "12345",
-  },
-  {
-    id: "2",
-    username: "alex",
-    email: "alex@misnovs.com",
-    password: "12345",
-  },
-];
-
 const getAllUsers = async (req, res, next) => {
   // const users = await User.find({}, '-password');
   let users;
   try {
-    users = await User.find({}, "email name");
+    users = await User.find({}, "email name places");
   } catch (error) {
     return next(new HttpError("Couldn't get the users", 500));
   }

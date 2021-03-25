@@ -6,6 +6,7 @@ const getCoordsForAddress = require("../utils/location");
 const mongoose = require("mongoose");
 const Place = require("../models/place");
 const User = require("../models/user");
+const place = require("../models/place");
 
 const getPlaceById = async (req, res, next) => {
   const placeId = req.params.pid;
@@ -104,7 +105,8 @@ const deletePlaceById = async (req, res, next) => {
   let place;
 
   try {
-    place = await Place.findById(pid).exec();
+    place = await Place.findById(pid).populate("creator");
+    // populate allows to refer to the other collection. populate method will work if we set up the relation in models
   } catch (err) {
     const error = new HttpError(err.message, 500);
     console.log(err.message);
@@ -114,11 +116,18 @@ const deletePlaceById = async (req, res, next) => {
 
   if (!place) {
     // throw new HttpError("Place Not Found!", 404);
-    return next(new HttpError("Place not found", 404));
+    return next(new HttpError("Place Not Found", 404));
   }
   // return updated places array
   try {
-    await place.remove();
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    await place.remove({ session: sess });
+    place.creator.places.pull(place);
+    await place.creator.save({ session: sess });
+    // we can do the above only if we use populate, because it gives us full user object to work with
+    console.log(place.creator);
+    await sess.commitTransaction(); // only at this stage do we save to db
   } catch (err) {
     const error = new HttpError(err.message, 500);
     console.log(err.message);
@@ -126,7 +135,7 @@ const deletePlaceById = async (req, res, next) => {
     return next(error);
   }
   res.status(200);
-  res.json({ message: "deleted", pid, place: place.toObject({ getters: true }) });
+  res.json({ message: "deleted", place: place.toObject({ getters: true }) });
 };
 
 const createNewPlace = async (req, res, next) => {
@@ -191,7 +200,7 @@ const createNewPlace = async (req, res, next) => {
 
   // dummyPlaces.push(createdPlace); // can use unshift
 
-  res.status(201).json({ place: createdPlace });
+  res.status(201).json({ place: createdPlace.toObject({ getters: true }) });
 };
 
 exports.getPlaceById = getPlaceById;
