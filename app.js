@@ -10,8 +10,19 @@ const { json } = require("body-parser");
 
 app.use(express.json());
 
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE");
+  next();
+});
+
 app.use("/api/v1/places/", placesRoutes); //places api
 app.use("/api/v1/users/", usersRoutes); //places api
+
 // only if we didn't send the response
 app.use((req, res, next) => {
   const error = new HttpError("couldnt find this route", 404);
