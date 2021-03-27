@@ -70,8 +70,12 @@ const signup = async (req, res, next) => {
   const validationErrors = validationResult(req);
   if (!validationErrors.isEmpty()) {
     console.log(validationErrors);
-    res.status(422);
-    res.json(validationErrors.mapped());
+    let errors = validationErrors.array();
+    console.log(errors);
+    console.log(errors[0]["msg"]);
+    // console.log(errors["email"]["msg"]);
+    return next(new HttpError(errors[0]["msg"], 422));
+    // res.json(validationErrors.mapped());
   }
   const { name, email, password } = req.body;
 
