@@ -7,7 +7,7 @@ const getAllUsers = async (req, res, next) => {
   // const users = await User.find({}, '-password');
   let users;
   try {
-    users = await User.find({}, "email name places");
+    users = await User.find({}, "email name places imageUrl");
   } catch (error) {
     return next(new HttpError("Couldn't get the users", 500));
   }
@@ -26,7 +26,7 @@ const getUserById = async (req, res, next) => {
   const uid = req.params.uid;
   let user;
   try {
-    user = await User.findById(uid, "email name places");
+    user = await User.findById(uid, "email name places imageUrl");
   } catch (error) {
     console.log(error);
     return next(new HttpError("Couldn't get the users", 500));
