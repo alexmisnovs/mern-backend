@@ -46,8 +46,12 @@ const login = async (req, res, next) => {
   const validationErrors = validationResult(req);
   if (!validationErrors.isEmpty()) {
     console.log(validationErrors);
-    res.status(422);
-    res.json(validationErrors.array());
+    let errors = validationErrors.array();
+    // console.log(errors);
+    // console.log(errors[0]["msg"]); // only do the first error
+    // // console.log(errors["email"]["msg"]);
+    return next(new HttpError(errors[0]["msg"], 422));
+    // res.json(validationErrors.mapped());
   }
   const { email, password } = req.body;
 
