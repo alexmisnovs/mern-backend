@@ -144,8 +144,12 @@ const createNewPlace = async (req, res, next) => {
 
   if (!validationErrors.isEmpty()) {
     console.log(validationErrors);
-    res.status(422);
-    res.json(validationErrors.mapped());
+    let errors = validationErrors.array();
+    // console.log(errors);
+    // console.log(errors[0]["msg"]); // only do the first error
+    // // console.log(errors["email"]["msg"]);
+    return next(new HttpError(errors[0]["msg"], 422));
+    // res.json(validationErrors.mapped());
   }
 
   const { title, description, address, creator } = req.body;
