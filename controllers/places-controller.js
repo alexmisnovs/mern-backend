@@ -13,9 +13,9 @@ const getPlaceById = async (req, res, next) => {
   let place;
   console.log(placeId);
   try {
-    place = await Place.findById(placeId).exec();
+    place = await Place.findById(placeId);
   } catch (err) {
-    const error = new HttpError(err.message, err.code, 500);
+    const error = new HttpError(err.message, 500);
     console.log(err.message);
     console.log(err.code);
     return next(error);
@@ -28,7 +28,7 @@ const getPlaceById = async (req, res, next) => {
   res.json({
     message: "Found",
     placeId,
-    places: places.map(place => place.toObject({ getters: true })),
+    place: place.toObject({ getters: true }),
   });
 };
 

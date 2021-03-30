@@ -40,7 +40,7 @@ app.use((error, req, res, next) => {
   });
 }); //if 4 params, special middleware - error handling. Express will only use it if ther ewas an error
 
-const MONGO_URI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASS}@cluster0.mvkrs.mongodb.net/${process.env.MONGO_DBNAME}?retryWrites=true&w=majority`;
+const MONGO_URI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASS}@cluster0.mvkrs.mongodb.net/${process.env.MONGO_DBNAME}?retryWrites=true&w=majority&ssl=true`;
 mongoose
   .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true }) // possibly might be better to split this into couple of variables
   .then(() => {
