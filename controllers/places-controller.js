@@ -41,14 +41,16 @@ const getPlacesByUserId = async (req, res, next) => {
     //we could do this with populate method on the user model
     userWithPlaces = await User.findById(uid).populate("places");
   } catch (err) {
-    if (err.kind === "ObjectId") return next(new HttpError(err.reason, 500));
+    if (err.kind === "ObjectId") return next(new HttpError(err.reason, 500)); // wrong user ID length
     console.log(err);
     return next(new HttpError("Couldn't find places", 500));
   }
-  // if (!places || places.length === 0) {
-  if (!userWithPlaces || userWithPlaces.places.length === 0) {
+  if (!userWithPlaces) {
     // throw new HttpError("User Not Found innit! blood", 404);
     return next(new HttpError("User not found", 404));
+  }
+  if (userWithPlaces.places.length === 0) {
+    return next(new HttpError("This user has no places yet.", 404));
   }
   res.json({
     uid,
