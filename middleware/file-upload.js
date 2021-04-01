@@ -5,7 +5,7 @@ const MIME_TYPE_MAP = {
   "image/jpg": "jpg",
   "image/jpeg": "jpeg",
 };
-const storage =  multer.diskStorage({
+const storage = multer.diskStorage({
   destination: (req, file, callback) => {
     callback(null, "uploads/images");
   },
@@ -13,7 +13,7 @@ const storage =  multer.diskStorage({
     const ext = MIME_TYPE_MAP[file.mimetype]; // get the mimetype
     callback(null, uuidv4() + "." + ext);
   },
-}),
+});
 
 const fileUpload = multer({
   limits: 5000000,
@@ -21,10 +21,9 @@ const fileUpload = multer({
   fileFilter: (req, file, callback) => {
     // error or null
     const isValid = !!MIME_TYPE_MAP[file.mimetype]; // !! converts unfefined to false
-    let error = isValid ? null : new Error('Invalid mimetype provided');
+    let error = isValid ? null : new Error("Invalid mimetype provided");
     callback(error, isValid);
-  }
-
+  },
 });
 
 module.exports = fileUpload;
