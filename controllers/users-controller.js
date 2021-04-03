@@ -101,7 +101,7 @@ const signup = async (req, res, next) => {
   const createdUser = new User({
     name,
     password, //TODO: encrypt password later
-    imageUrl: "https://picsum.photos/100/100",
+    imageUrl: req.file.path,
     email,
     places: [],
   });
