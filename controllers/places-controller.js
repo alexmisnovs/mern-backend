@@ -167,7 +167,7 @@ const createNewPlace = async (req, res, next) => {
     title,
     description,
     location: coordinates,
-    imageUrl: "https://picsum.photos/200/300",
+    imageUrl: req.file.path,
     address,
     creator,
   });
