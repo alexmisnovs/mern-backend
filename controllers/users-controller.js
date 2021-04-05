@@ -153,6 +153,8 @@ const updateUserById = (req, res, next) => {
   res.json({ message: "updated", uid, updatedUser, body: req.body });
 };
 const deleteUserById = (req, res, next) => {
+  //TODO: implement proper deletion from the database.
+  //TODO: cascade deleting places and images of the places.
   const uid = req.params.uid;
   // check if we have any users with that uid
   const user = dummyUsers.find(u => {

@@ -1,4 +1,5 @@
 const HttpError = require("../models/http-error");
+const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
 const { validationResult } = require("express-validator");
 //TODO: make get coords work with google api as well. atm only with mapbox
@@ -121,6 +122,7 @@ const deletePlaceById = async (req, res, next) => {
     // throw new HttpError("Place Not Found!", 404);
     return next(new HttpError("Place Not Found", 404));
   }
+  const imagePath = place.imageUrl;
   // return updated places array
   try {
     const sess = await mongoose.startSession();
@@ -137,6 +139,10 @@ const deletePlaceById = async (req, res, next) => {
     console.log(err.code);
     return next(error);
   }
+  // delete the place image.
+  fs.unlink(imagePath, err => {
+    console.log(err);
+  });
   res.status(200);
   res.json({ message: "deleted", place: place.toObject({ getters: true }) });
 };
