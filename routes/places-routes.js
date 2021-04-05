@@ -2,7 +2,7 @@ const express = require("express");
 const { check, body } = require("express-validator");
 const router = express.Router();
 const placesController = require("../controllers/places-controller");
-const fileUpload = require("../middleware/file-upload");
+const fileUpload = require("../middleware/file-upload-places");
 // will respond to antyhing after the slash, so its better to use something like: /places/pid
 router.get("/:pid", placesController.getPlaceById);
 

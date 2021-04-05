@@ -7,7 +7,7 @@ const MIME_TYPE_MAP = {
 };
 const storage = multer.diskStorage({
   destination: (req, file, callback) => {
-    callback(null, "uploads/images");
+    callback(null, "uploads/images/users");
   },
   filename: (req, file, callback) => {
     const ext = MIME_TYPE_MAP[file.mimetype]; // get the mimetype

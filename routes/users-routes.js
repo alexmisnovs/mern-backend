@@ -3,7 +3,7 @@ const { check, body } = require("express-validator");
 
 const router = express.Router();
 const usersController = require("../controllers/users-controller");
-const fileUpload = require("../middleware/file-upload");
+const fileUpload = require("../middleware/file-upload-users");
 // will respond to antyhing after the slash, so its better to use something like: /places/pid
 router.get("/", usersController.getAllUsers);
 router.get("/:uid", usersController.getUserById);

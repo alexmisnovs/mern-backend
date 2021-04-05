@@ -8,11 +8,10 @@ require("dotenv").config();
 const app = express();
 const placesRoutes = require("./routes/places-routes");
 const usersRoutes = require("./routes/users-routes");
-const { json } = require("body-parser");
-
-app.use(express.json());
 
 app.use("/uploads/images", express.static(path.join("uploads", "images")));
+
+app.use(express.json());
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
