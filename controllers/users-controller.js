@@ -1,6 +1,7 @@
 const HttpError = require("../models/http-error");
 const { v4: uuidv4 } = require("uuid");
 const { validationResult } = require("express-validator");
+const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 
 const getAllUsers = async (req, res, next) => {
@@ -97,10 +98,16 @@ const signup = async (req, res, next) => {
   if (existingUser) {
     return next(new HttpError("signup failed email taken", 422));
   }
+  let hashedPass;
+  try {
+    hashedPass = await bcrypt.hash(password, 12);
+  } catch (err) {
+    return next(new HttpError("Signup Failed, couldn't hash", 500));
+  }
 
   const createdUser = new User({
     name,
-    password, //TODO: encrypt password later
+    password: hashedPass, //TODO: encrypt password later
     imageUrl: req.file.path,
     email,
     places: [],
