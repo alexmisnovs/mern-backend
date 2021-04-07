@@ -78,7 +78,18 @@ const login = async (req, res, next) => {
     // throw new HttpError("User Not Found innit! blood", 404);
     return next(new HttpError("Password wrong", 401));
   }
-  res.json({ message: "logged in", user: existingUser.toObject({ getters: true }) });
+  let token;
+  try {
+    jwt.sign({ userId: existingUser.id, email: existingUser.email }, process.env.JWTPRIVATEKEY, {
+      expiresIn: "1h",
+    });
+  } catch (error) {
+    const error = new HttpError("Login failed", 500);
+    console.log(err.message);
+    console.log(err.code);
+    return next(error);
+  }
+  res.json({ userId: existingUser.id, email: existingUser.email, token });
 };
 
 const signup = async (req, res, next) => {
@@ -132,7 +143,19 @@ const signup = async (req, res, next) => {
     return next(error);
   }
   // obviously live we dont return password
-  res.status(201).json({ message: "User created", user: createdUser.toObject({ getters: true }) });
+  let token;
+  try {
+    jwt.sign({ userId: createdUser.id, email: createdUser.email }, process.env.JWTPRIVATEKEY, {
+      expiresIn: "1h",
+    });
+  } catch (error) {
+    const error = new HttpError("Signing up failed", 500);
+    console.log(err.message);
+    console.log(err.code);
+    return next(error);
+  }
+
+  res.status(201).json({ userId: createdUser.id, email: createdUser.email, token });
 };
 
 const updateUserById = (req, res, next) => {
