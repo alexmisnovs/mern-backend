@@ -3,6 +3,7 @@ const { v4: uuidv4 } = require("uuid");
 const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
+const jwt = require("jsonwebtoken");
 
 const getAllUsers = async (req, res, next) => {
   // const users = await User.find({}, '-password');
