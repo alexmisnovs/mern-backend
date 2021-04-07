@@ -63,11 +63,20 @@ const login = async (req, res, next) => {
     return next(new HttpError("Login Failed", 500));
   }
 
-  if (!existingUser || existingUser.password !== password) {
+  if (!existingUser) {
     // throw new HttpError("User Not Found innit! blood", 404);
-    return next(new HttpError("User not found or wrong credentials provided", 401));
+    return next(new HttpError("User not found", 401));
   }
-
+  let isValidPassword = false;
+  try {
+    isValidPassword = bcrypt.compare(password, existingUser.password);
+  } catch (error) {
+    return next(new HttpError(`login failed, ${error.message}`, 500));
+  }
+  if (!isValidPassword) {
+    // throw new HttpError("User Not Found innit! blood", 404);
+    return next(new HttpError("Password wrong", 401));
+  }
   res.json({ message: "logged in", user: existingUser.toObject({ getters: true }) });
 };
 
