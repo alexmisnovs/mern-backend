@@ -69,7 +69,7 @@ const updatePlaceById = async (req, res, next) => {
     return;
   }
 
-  const { title, description, coordinates, address } = req.body;
+  const { title, description, address } = req.body;
   const pid = req.params.pid;
 
   let place;
@@ -87,9 +87,14 @@ const updatePlaceById = async (req, res, next) => {
     // throw new HttpError("Place Not Found!", 404);
     return next(new HttpError("Place not found", 404));
   }
+  // make sure that user ownes this place.. innit blood..
+  if (place.creator.toString() !== req.userData.userId) {
+    return next(new HttpError("You dont OWN this place..", 401));
+  }
 
   if (title) place.title = title;
   if (description) place.description = description;
+  //TODO add address to the update
 
   try {
     await place.save();
