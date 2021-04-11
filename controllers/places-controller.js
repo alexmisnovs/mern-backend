@@ -127,6 +127,11 @@ const deletePlaceById = async (req, res, next) => {
     // throw new HttpError("Place Not Found!", 404);
     return next(new HttpError("Place Not Found", 404));
   }
+  // dont need toString here because of the populate
+  if (place.creator.id !== req.userData.userId) {
+    return next(new HttpError("You dont OWN this place..", 401));
+  }
+
   const imagePath = place.imageUrl;
   // return updated places array
   try {
