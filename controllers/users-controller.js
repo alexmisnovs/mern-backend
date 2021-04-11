@@ -80,9 +80,13 @@ const login = async (req, res, next) => {
   }
   let token;
   try {
-    jwt.sign({ userId: existingUser.id, email: existingUser.email }, process.env.JWTPRIVATEKEY, {
-      expiresIn: "1h",
-    });
+    token = await jwt.sign(
+      { userId: existingUser.id, email: existingUser.email },
+      process.env.JWTPRIVATEKEY,
+      {
+        expiresIn: "1h",
+      }
+    );
   } catch (err) {
     const error = new HttpError("Login failed", 500);
     console.log(err.message);
@@ -145,9 +149,13 @@ const signup = async (req, res, next) => {
   // obviously live we dont return password
   let token;
   try {
-    jwt.sign({ userId: createdUser.id, email: createdUser.email }, process.env.JWTPRIVATEKEY, {
-      expiresIn: "1h",
-    });
+    token = await jwt.sign(
+      { userId: createdUser.id, email: createdUser.email },
+      process.env.JWTPRIVATEKEY,
+      {
+        expiresIn: "2h",
+      }
+    );
   } catch (err) {
     const error = new HttpError("Signing up failed", 500);
     console.log(err.message);
