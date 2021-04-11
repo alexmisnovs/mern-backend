@@ -3,12 +3,13 @@ const { check, body } = require("express-validator");
 const router = express.Router();
 const placesController = require("../controllers/places-controller");
 const fileUpload = require("../middleware/file-upload-places");
+const checkAuth = require("../middleware/check-auth");
 // will respond to antyhing after the slash, so its better to use something like: /places/pid
 router.get("/:pid", placesController.getPlaceById);
 
 router.get("/user/:uid", placesController.getPlacesByUserId);
 
-router.use();
+router.use(checkAuth);
 
 router.post(
   "/",

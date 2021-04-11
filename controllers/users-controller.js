@@ -83,7 +83,7 @@ const login = async (req, res, next) => {
     jwt.sign({ userId: existingUser.id, email: existingUser.email }, process.env.JWTPRIVATEKEY, {
       expiresIn: "1h",
     });
-  } catch (error) {
+  } catch (err) {
     const error = new HttpError("Login failed", 500);
     console.log(err.message);
     console.log(err.code);
@@ -113,7 +113,7 @@ const signup = async (req, res, next) => {
   let existingUser;
   try {
     existingUser = await User.findOne({ email });
-  } catch (error) {
+  } catch (err) {
     return next(new HttpError("Signup Failed", 500));
   }
   if (existingUser) {
@@ -148,7 +148,7 @@ const signup = async (req, res, next) => {
     jwt.sign({ userId: createdUser.id, email: createdUser.email }, process.env.JWTPRIVATEKEY, {
       expiresIn: "1h",
     });
-  } catch (error) {
+  } catch (err) {
     const error = new HttpError("Signing up failed", 500);
     console.log(err.message);
     console.log(err.code);
