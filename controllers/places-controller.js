@@ -170,7 +170,7 @@ const createNewPlace = async (req, res, next) => {
     // res.json(validationErrors.mapped());
   }
 
-  const { title, description, address, creator } = req.body;
+  const { title, description, address } = req.body;
 
   let coordinates;
   try {
@@ -185,7 +185,7 @@ const createNewPlace = async (req, res, next) => {
     location: coordinates,
     imageUrl: req.file.path,
     address,
-    creator,
+    creator: req.userData.userId,
   });
 
   let user;
