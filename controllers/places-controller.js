@@ -94,7 +94,21 @@ const updatePlaceById = async (req, res, next) => {
 
   if (title) place.title = title;
   if (description) place.description = description;
-  //TODO add address to the update
+  // if address actually changed, if not do not send request
+  if (address && place.address !== address) {
+    place.address = address;
+    // we only do request if we have had any changes
+    console.log("address changed");
+    let coordinates;
+    try {
+      coordinates = await getCoordsForAddress(address);
+    } catch (error) {
+      return next(error);
+    }
+    place.location = coordinates;
+  }
+
+  //TODO add address to the update and coordinates
 
   try {
     await place.save();
