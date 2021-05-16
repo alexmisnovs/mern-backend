@@ -18,6 +18,7 @@ router.post(
     check("title").not().isEmpty().withMessage("Please provide a value"),
     check("description").isLength({ min: 5 }).withMessage("must contain atleast 5 chars"),
     check("address").not().isEmpty().withMessage("Please provide a value"),
+    check("city").not().isEmpty().withMessage("Please provide a value for city"),
   ],
   placesController.createNewPlace
 );
@@ -34,6 +35,11 @@ router.patch(
       .not()
       .isEmpty()
       .withMessage("Please provide a value"),
+    check("city")
+      .if(body("city").exists())
+      .not()
+      .isEmpty()
+      .withMessage("Please provide a value for city"),
   ],
   placesController.updatePlaceById
 );

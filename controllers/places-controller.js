@@ -69,7 +69,7 @@ const updatePlaceById = async (req, res, next) => {
     return;
   }
 
-  const { title, description, address } = req.body;
+  const { title, description, address, city } = req.body;
   const pid = req.params.pid;
 
   let place;
@@ -94,11 +94,12 @@ const updatePlaceById = async (req, res, next) => {
 
   if (title) place.title = title;
   if (description) place.description = description;
+  if (city) place.city = city;
   // if address actually changed, if not do not send request
   if (address && place.address !== address) {
     place.address = address;
     // we only do request if we have had any changes
-    console.log("address changed");
+    console.log("address changed, calling for new coords");
     let coordinates;
     try {
       coordinates = await getCoordsForAddress(address);
@@ -184,7 +185,7 @@ const createNewPlace = async (req, res, next) => {
     // res.json(validationErrors.mapped());
   }
 
-  const { title, description, address } = req.body;
+  const { title, description, address, city } = req.body;
 
   let coordinates;
   try {
@@ -199,6 +200,7 @@ const createNewPlace = async (req, res, next) => {
     location: coordinates,
     imageUrl: req.file.path,
     address,
+    city,
     creator: req.userData.userId,
   });
 
