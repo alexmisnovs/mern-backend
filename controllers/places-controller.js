@@ -5,9 +5,10 @@ const { validationResult } = require("express-validator");
 //TODO: make get coords work with google api as well. atm only with mapbox
 const getCoordsForAddress = require("../utils/location");
 const mongoose = require("mongoose");
+
+const { cloudinary } = require("../services/cloudinary");
 const Place = require("../models/place");
 const User = require("../models/user");
-const place = require("../models/place");
 
 const getPlaceById = async (req, res, next) => {
   const placeId = req.params.pid;
@@ -30,6 +31,31 @@ const getPlaceById = async (req, res, next) => {
     message: "Found",
     placeId,
     place: place.toObject({ getters: true }),
+  });
+};
+
+const findPlacesByCity = async (req, res, next) => {
+  const searchText = req.params.city;
+  // const { city } = req.body;
+  // since I got a form, I could still use query string
+  let places;
+
+  try {
+    places = await Place.find({ $text: { $search: searchText } });
+  } catch (err) {
+    const error = new HttpError(err.message, 500);
+    console.log(err.message);
+    console.log(err.code);
+    return next(error);
+  }
+
+  if (!places) {
+    // throw new HttpError("Place Not Found!", 404);
+    return next(new HttpError("No playgounds found", 404));
+  }
+  res.json({
+    message: "Found",
+    places: places.map(place => place.toObject({ getters: true })),
   });
 };
 
@@ -69,7 +95,7 @@ const updatePlaceById = async (req, res, next) => {
     return;
   }
 
-  const { title, description, address } = req.body;
+  const { title, description, address, city } = req.body;
   const pid = req.params.pid;
 
   let place;
@@ -94,7 +120,22 @@ const updatePlaceById = async (req, res, next) => {
 
   if (title) place.title = title;
   if (description) place.description = description;
-  //TODO add address to the update
+  if (city) place.city = city;
+  // if address actually changed, if not do not send request
+  if (address && place.address !== address) {
+    place.address = address;
+    // we only do request if we have had any changes
+    console.log("address changed, calling for new coords");
+    let coordinates;
+    try {
+      coordinates = await getCoordsForAddress(address);
+    } catch (error) {
+      return next(error);
+    }
+    place.location = coordinates;
+  }
+
+  //TODO add address to the update and coordinates
 
   try {
     await place.save();
@@ -132,7 +173,7 @@ const deletePlaceById = async (req, res, next) => {
     return next(new HttpError("You dont OWN this place..", 401));
   }
 
-  const imagePath = place.imageUrl;
+  // const imagePath = place.imageUrl;
   // return updated places array
   try {
     const sess = await mongoose.startSession();
@@ -149,10 +190,12 @@ const deletePlaceById = async (req, res, next) => {
     console.log(err.code);
     return next(error);
   }
-  // delete the place image.
-  fs.unlink(imagePath, err => {
-    console.log(err);
-  });
+  // delete the place image if used in filesystem
+  // fs.unlink(imagePath, err => {
+  //   console.log(err);
+  // });
+  // delete an image from cloudinary
+  await cloudinary.uploader.destroy(place.filename);
   res.status(200);
   res.json({ message: "deleted", place: place.toObject({ getters: true }) });
 };
@@ -170,7 +213,7 @@ const createNewPlace = async (req, res, next) => {
     // res.json(validationErrors.mapped());
   }
 
-  const { title, description, address, creator } = req.body;
+  const { title, description, address, city } = req.body;
 
   let coordinates;
   try {
@@ -184,13 +227,14 @@ const createNewPlace = async (req, res, next) => {
     description,
     location: coordinates,
     imageUrl: req.file.path,
+    filename: req.file.filename,
     address,
-    creator,
+    city,
+    creator: req.userData.userId,
   });
-
   let user;
   try {
-    user = await User.findById(creator);
+    user = await User.findById(req.userData.userId);
   } catch (err) {
     const error = new HttpError(err.message, 500);
     console.log(err.message);
@@ -231,3 +275,4 @@ exports.getPlacesByUserId = getPlacesByUserId;
 exports.createNewPlace = createNewPlace;
 exports.updatePlaceById = updatePlaceById;
 exports.deletePlaceById = deletePlaceById;
+exports.findPlacesByCity = findPlacesByCity;
