@@ -5,6 +5,8 @@ const { validationResult } = require("express-validator");
 //TODO: make get coords work with google api as well. atm only with mapbox
 const getCoordsForAddress = require("../utils/location");
 const mongoose = require("mongoose");
+
+const { cloudinary } = require("../services/cloudinary");
 const Place = require("../models/place");
 const User = require("../models/user");
 
@@ -188,10 +190,12 @@ const deletePlaceById = async (req, res, next) => {
     console.log(err.code);
     return next(error);
   }
-  // delete the place image.
+  // delete the place image if used in filesystem
   fs.unlink(imagePath, err => {
     console.log(err);
   });
+  // delete an image from cloudinary
+  await cloudinary.uploader.destroy(place.filename);
   res.status(200);
   res.json({ message: "deleted", place: place.toObject({ getters: true }) });
 };
@@ -223,11 +227,11 @@ const createNewPlace = async (req, res, next) => {
     description,
     location: coordinates,
     imageUrl: req.file.path,
+    filename: req.file.filename,
     address,
     city,
     creator: req.userData.userId,
   });
-
   let user;
   try {
     user = await User.findById(req.userData.userId);

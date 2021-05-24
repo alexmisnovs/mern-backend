@@ -1,19 +1,22 @@
 const multer = require("multer");
 const { v4: uuidv4 } = require("uuid");
+const { storage } = require("../services/cloudinary");
+
 const MIME_TYPE_MAP = {
   "image/png": "png",
   "image/jpg": "jpg",
   "image/jpeg": "jpeg",
 };
-const storage = multer.diskStorage({
-  destination: (req, file, callback) => {
-    callback(null, "uploads/images/users");
-  },
-  filename: (req, file, callback) => {
-    const ext = MIME_TYPE_MAP[file.mimetype]; // get the mimetype
-    callback(null, uuidv4() + "." + ext);
-  },
-});
+// uncomment for local storage
+// const storage = multer.diskStorage({
+//   destination: (req, file, callback) => {
+//     callback(null, "uploads/images/users");
+//   },
+//   filename: (req, file, callback) => {
+//     const ext = MIME_TYPE_MAP[file.mimetype]; // get the mimetype
+//     callback(null, uuidv4() + "." + ext);
+//   },
+// });
 
 const fileUpload = multer({
   limits: 5000000,
