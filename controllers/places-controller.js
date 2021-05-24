@@ -173,7 +173,7 @@ const deletePlaceById = async (req, res, next) => {
     return next(new HttpError("You dont OWN this place..", 401));
   }
 
-  const imagePath = place.imageUrl;
+  // const imagePath = place.imageUrl;
   // return updated places array
   try {
     const sess = await mongoose.startSession();
@@ -191,9 +191,9 @@ const deletePlaceById = async (req, res, next) => {
     return next(error);
   }
   // delete the place image if used in filesystem
-  fs.unlink(imagePath, err => {
-    console.log(err);
-  });
+  // fs.unlink(imagePath, err => {
+  //   console.log(err);
+  // });
   // delete an image from cloudinary
   await cloudinary.uploader.destroy(place.filename);
   res.status(200);
