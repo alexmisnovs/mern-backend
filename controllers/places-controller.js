@@ -7,7 +7,6 @@ const getCoordsForAddress = require("../utils/location");
 const mongoose = require("mongoose");
 const Place = require("../models/place");
 const User = require("../models/user");
-const place = require("../models/place");
 
 const getPlaceById = async (req, res, next) => {
   const placeId = req.params.pid;
@@ -30,6 +29,31 @@ const getPlaceById = async (req, res, next) => {
     message: "Found",
     placeId,
     place: place.toObject({ getters: true }),
+  });
+};
+
+const findPlacesByCity = async (req, res, next) => {
+  const searchText = req.params.city;
+  // const { city } = req.body;
+  // since I got a form, I could still use query string
+  let places;
+
+  try {
+    places = await Place.find({ $text: { $search: searchText } });
+  } catch (err) {
+    const error = new HttpError(err.message, 500);
+    console.log(err.message);
+    console.log(err.code);
+    return next(error);
+  }
+
+  if (!places) {
+    // throw new HttpError("Place Not Found!", 404);
+    return next(new HttpError("No playgounds found", 404));
+  }
+  res.json({
+    message: "Found",
+    places: places.map(place => place.toObject({ getters: true })),
   });
 };
 
@@ -247,3 +271,4 @@ exports.getPlacesByUserId = getPlacesByUserId;
 exports.createNewPlace = createNewPlace;
 exports.updatePlaceById = updatePlaceById;
 exports.deletePlaceById = deletePlaceById;
+exports.findPlacesByCity = findPlacesByCity;

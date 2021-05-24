@@ -6,6 +6,7 @@ const fileUpload = require("../middleware/file-upload-places");
 const checkAuth = require("../middleware/check-auth");
 // will respond to antyhing after the slash, so its better to use something like: /places/pid
 router.get("/:pid", placesController.getPlaceById);
+router.get("/search/:city", placesController.findPlacesByCity);
 
 router.get("/user/:uid", placesController.getPlacesByUserId);
 

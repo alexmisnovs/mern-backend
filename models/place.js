@@ -14,4 +14,6 @@ const placeSchema = new Schema({
   creator: { type: mongoose.Types.ObjectId, required: true, ref: "User" },
 });
 
+placeSchema.index({ city: "text", address: "text" });
+
 module.exports = mongoose.model("Place", placeSchema);
