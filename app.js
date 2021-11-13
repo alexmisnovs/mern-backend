@@ -54,7 +54,7 @@ mongoose
   .then(() => {
     console.log("Connected to the database server");
     // can also run the db write check to see if the database name is not misspelled. TODO:
-    app.listen(process.env.PORT || 5000);
+    app.listen(process.env.PORT || 4000);
   })
   .catch(e => {
     console.log("Errors..");
